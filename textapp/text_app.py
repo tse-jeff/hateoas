@@ -7,6 +7,9 @@ import json
 
 import textapp.formatting as fmt
 
+import sys
+sys.path.append('../')
+
 TEST = "test"
 PROD = "prod"
 
