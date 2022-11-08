@@ -7,17 +7,22 @@ import os
 import requests
 import sys
 
-sys.path.append('../')
+
+from http.client import OK
+
 from textapp.text_app import get_single_opt, URL, METHOD
 from textapp.text_app import TYPE, DATA, data_repr
 from textapp.text_app import FORM, run_form, MENU
 from textapp.text_app import FLDS, DATA_TEXT
+
+sys.path.append('../')
 
 MAIN_MENU_ROUTE = '/main_menu'
 MENU_URL = ''
 
 CONTINUE = 1
 HALT = 0
+ERROR = -1
 
 API_SERVER_URL = "GAME_API_URL"
 LOCAL_HOST = "http://127.0.0.1:8000"
@@ -43,11 +48,17 @@ def run_menu(session, server, route=None, menu=None, form=None):
     The caller must pass *either* `route` OR `menu`.
     """
     print(f"route = {server}{route}")
-    if menu is None:
-        menu = session.get(f"{server}{route}")
-    # at this point we should check for 404 etc.
-    print(f'{menu.json()=}')
-    opt = get_single_opt(menu.json())
+    status = ERROR
+    try:
+        if menu is None:
+            menu = session.get(f"{server}{route}").json()
+            status = menu.status_code
+    except Exception as e:
+        print(str(e))
+    if status != OK:
+        return ERROR
+    print(f'{menu=}')
+    opt = get_single_opt(menu)
     # no URL means exit!
     if not opt.get(URL):
         return HALT
@@ -57,14 +68,14 @@ def run_menu(session, server, route=None, menu=None, form=None):
         if not result:
             print(f"Get method failed with code: {result.status_code}")
             exit(1)
-        print(result)
+        print(result.content)
         json_ret = result.json()
         if json_ret[TYPE] == DATA:
             display_data_page(session, server, json_ret)
         elif json_ret[TYPE] == FORM:
             handle_form(session, server, json_ret)
         elif json_ret[TYPE] == MENU:
-            run_menu(server, menu=json_ret)
+            run_menu(session, server, menu=json_ret)
     elif opt[METHOD] == 'post':
         if form is None:
             print("Data to post missing from post method.")
@@ -79,8 +90,10 @@ def main():
     print(f"API server is {server}")
     session = requests.Session()
     cont = CONTINUE
-    while cont:
+    while cont == CONTINUE:
         cont = run_menu(session, server, route=MAIN_MENU_ROUTE)
+    if cont == ERROR:
+        return ERROR
 
 
 if __name__ == "__main__":
