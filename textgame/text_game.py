@@ -7,6 +7,7 @@ import os
 import requests
 import sys
 
+sys.path.append('../')
 
 from http.client import OK
 
@@ -15,7 +16,6 @@ from textapp.text_app import TYPE, DATA, data_repr
 from textapp.text_app import FORM, run_form, MENU
 from textapp.text_app import FLDS, DATA_TEXT
 
-sys.path.append('../')
 
 MAIN_MENU_ROUTE = '/main_menu'
 MENU_URL = ''
