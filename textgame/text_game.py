@@ -27,8 +27,6 @@ ERROR = -1
 API_SERVER_URL = "GAME_API_URL"
 LOCAL_HOST = "http://127.0.0.1:8000"
 
-EXIT = 'x'
-
 
 def display_data_page(session, server, data):
     print(f"\n{data_repr(data)[DATA_TEXT]}\n")
